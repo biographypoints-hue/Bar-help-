@@ -1,0 +1,41 @@
+name: Build Debug APK
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Unzip project source
+        run: unzip -o FloatingTaskbar.zip
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Generate Gradle wrapper
+        working-directory: FloatingTaskbar
+        run: gradle wrapper --gradle-version 8.7
+
+      - name: Build debug APK
+        working-directory: FloatingTaskbar
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Upload APK as build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloatingTaskbar-debug-apk
+          path: FloatingTaskbar/app/build/outputs/apk/debug/app-debug.apk
